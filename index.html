@@ -1,0 +1,377 @@
+<html>
+
+<head>
+    <title>OM-CAT: Omni Context Aware Transformer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="helper-v2.js" defer=""></script>
+    <style>
+        td {
+            text-align: right;
+            vertical-align: middle;
+            padding: 0 24px;
+        }
+
+        audio {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .timestamp-label {
+            color: gray;
+        }
+
+        table.wide-audio audio {
+            width: 40vw;
+            max-width: 40vw;
+        }
+
+        tr:not(:first-child) {
+            border-top: 1px solid lightgrey;
+            /* Use light gray color for the border */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container pt-5 mt-5">
+        <div class="text-center" style="color: rgb(228, 8, 217);">
+            <h1 style="color: rgb(225, 33, 119);">
+                <img src="static/omcat-logo.jpg" alt="Logo" width="200" height="200"><br>
+                OMCAT<br>Omni Context Aware Transformer
+            </h1>
+        </div>
+        <br><br>
+        <div>
+            <p>
+                <b>Abstract. </b>    <p>
+                    Large Language Models (LLMs) have made significant strides in text generation and comprehension, with recent advancements extending into multimodal LLMs that integrate visual and audio inputs. However, these models continue to struggle with fine-grained, cross-modal temporal understanding, particularly when correlating events across audio and video streams. <br>
+                    We address these challenges with two key contributions: a new dataset and model, called <code>OCTAV</code> (<b>O</b>mni <b>C</b>ontext and <b>T</b>emporal <b>A</b>udio <b>V</b>ideo) and <code>OMCAT</code> respectively. <code>OCTAV</code> (<b>O</b>mni <b>C</b>ontext and <b>T</b>emporal <b>A</b>udio <b>V</b>ideo) is a novel dataset designed to capture event transitions across both modalities. Second, <code>OMCAT</code> (<b>O</b>mni <b>C</b>ontext <b>A</b>ware <b>T</b>ransformer) is a powerful model that leverages <code>RoTE</code> (Rotary Time Embeddings), an innovative extension of RoPE, to enhance temporal grounding and computational efficiency in time-anchored tasks. <br>
+                    Through a robust three-stage training pipeline—feature alignment, instruction tuning, and <code>OCTAV</code>--specific training--<code>OMCAT</code> excels in cross-modal temporal understanding. Our model demonstrates state-of-the-art performance on Audio-Visual Question Answering (AVQA) tasks and the <code>OCTAV</code> benchmark, showcasing significant gains in temporal reasoning and cross-modal alignment, as validated through comprehensive experiments and ablation studies. 
+            </p>
+        </div>
+    </div>
+    <style>
+        .table-pagination {
+            display: none;
+            /* Hide all tables with pagination class by default */
+        }
+
+        .cat {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-image: url('static/omcat-logo.jpg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.1; /* Adding transparency with alpha */
+            transition: transform 4s linear, opacity 2s ease-in-out; /* Smooth movement and opacity */
+        }
+
+        @keyframes fly {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(calc(100vw - 100px), calc(100vh - 100px)); }
+        }
+
+    </style>
+    <script>
+             function getRandomPosition() {
+            let randomX = Math.floor(Math.random() * window.innerWidth);
+            let randomY = Math.floor(Math.random() * window.innerHeight);
+            return [randomX, randomY];
+        }
+
+        function createFlyingCat() {
+            const cat = document.createElement('div');
+            cat.classList.add('cat');
+
+            const [x, y] = getRandomPosition();
+            cat.style.left = `${x}px`;
+            cat.style.top = `${y}px`;
+
+            document.body.appendChild(cat);
+
+            // Move the cat to a random position and disappear when off the screen
+            setTimeout(() => moveCat(cat), 1000);
+        }
+
+        function moveCat(cat) {
+            const [newX, newY] = getRandomPosition();
+            const catRect = cat.getBoundingClientRect();
+
+            cat.style.transition = 'transform 4s linear';
+            cat.style.transform = `translate(${newX - catRect.left}px, ${newY - catRect.top}px)`;
+
+            // Remove the cat from the DOM after 4 seconds (once it's moved off the screen)
+            setTimeout(() => {
+                cat.remove();
+            }, 4000);
+        }
+
+        // Create 10 flying cats every 2 seconds
+        setInterval(() => {
+            createFlyingCat();
+        }, 5000);
+    </script>
+
+
+<div class="text-center">
+    <h2>Single-turn temporal and cross-modal question answering</h2>
+</div>
+<div class="text-center">
+    <p> <code>OMCAT</code> achieves state-of-the-art performance on the <code>OCTAV-ST ActivityNet</code> bechmark which consists of single-turn question answers <br>
+       for videos that are anchored on single sound events. Below, we show some examples from <code>OMCAT</code> and compare it to <code>Video LLaMA 2</code>, an audio-visual language model.</p>
+</div>
+<div class="container pt-5 mt-5 shadow p-5 mb-5 bg-white rounded">
+    <div class="container pt-1">
+        <div class="table-responsive pt-1">
+            <table class="table pt-1" id="dialogue">
+                <thead>
+                    <tr>
+                        <th style="text-align: center">Video</th>
+                        <!-- <th style="text-align: center">Baseline</th> -->
+                        <th style="text-align: center">Question-Answer</th>
+                        <th style="text-align: center">Question-Answer</th>
+                    </tr>
+                    
+                    <tr style="height: 120px;">
+                        <td style="text-align: center;"><video controls="" controlslist="nodownload" class="px-1" width="360" height="360">
+                                <source src="static/v_J2gGPC98yec/v_J2gGPC98yec_0_vid_with_spect.mp4" type="video/mp4">Your browser does
+                                not
+                                support the audio element.
+                        </video></td>
+                        <td style="text-align: left"><b>User</b>: <b>Please briefly describe what is happening in the video before the sound of clock alarm with exact start and end time information.</b><br><br>
+                                <b style="color:black;">Ground Truth</b>: The sound of <b>clock alarm is from 7 to 8.4 seconds</b>. From 0 to 7 seconds, <b>a man is standing on a field</b >.<br><br>
+                                <b style="color:gray;">Video LLaMA 2</b>: In the video, a man is seen throwing a javelin. The sound of the clock alarm occurs from 10.0 second to 15.0 second.<br><br>
+                                <b style="color:rgb(233, 28, 140);">OMCAT</b>: The sound of <b>clock alarm is from 7.2 to 8.4 seconds</b>. From 0 to 7.2 seconds, <b><u>a man is seen standing on a large field holding a shot put</u></b>.<br><br>
+
+                        </td>
+                        <td style="text-align: left"><b>User</b>: <b>Descibe what is happening in the video after the sound of clock alarm with start and end timestamps.</b><br><br>
+                            <b style="color:black;">Ground Truth</b>:  The sound of <b>clock alarm is from 7 to 8.4 seconds</b>. From 8.4 to 18 seconds, <b>he picks up a ball and spins around before throwing it onto the field</b>.<br><br>
+                            <b style="color:gray;">Video LLaMA 2</b>: A man throws a discus while a group of people watches.<br><br>
+                            <b style="color:rgb(233, 28, 140);">OMCAT</b>: The sound of <b>clock alarm is from 7.8 to 9 seconds</b>. From 9 to 18 seconds, <b><u>he spins and throws the ball</u></b>.<br><br>
+
+                    </td>
+
+                    </tr>
+                    <tr style="height: 120px;">
+                        <td style="text-align: center;"><video controls="" controlslist="nodownload" class="px-1" width="360" height="360">
+                                <source src="static/v_Qo3riKtRg2c/v_Qo3riKtRg2c_1_vid_with_spect.mp4" type="video/mp4">Your browser does
+                                not
+                                support the audio element.
+                        </video></td>
+                        <td style="text-align: left"><b>User</b>: <b>Descibe what is happening in the video before the sound of street music with start and end timestamps.</b><br><br>
+                                <b style="color:black;">Ground Truth</b>: The sound of <b>street music is from 2.8 to 4.9 seconds</b>. From 0 to 2.8 seconds, <b>a man is seen standing on a bowling lane holding a ball</b>.<br><br>
+                                <b style="color:gray;">Video LLaMA 2</b>: Before the sound of street music, a man is seen standing in a bowling alley, holding a bowling ball. He then throws the ball down the lane. The exact start time of this event is 0.0 second, and the end time is 5.0 second.<br><br>
+                                <b style="color:rgb(233, 28, 140);">OMCAT</b>: The sound of <b>street music is from 2.9 to 4.9 seconds</b>. From 0 to 2.9 seconds, <b><u>a man is seen standing in a bowling alley holding a ball</u></b>.<br><br>
+
+                        </td>
+                        <td style="text-align: left"><b>User</b>: <b>Provide a brief description of what is happening in the video after the sound of street music along with start and end timestamps.</b><br><br>
+                            <b style="color:black;">Ground Truth</b>: The sound of <b>street music is from 2.8 to 4.9 seconds</b>. From 4.9 to 10 seconds, <b>he throws the ball down the lane in the end</b>.<br><br>
+                            <b style="color:gray;">Video LLaMA 2</b>: A man is seen bowling in a bowling alley. He then throws a bowling ball down the lane and hits several pins. <br><br>
+                            <b style="color:rgb(233, 28, 140);">OMCAT</b>: The sound of <b>street music is from 2.8 to 4.9 seconds</b>. From 4.9 to 10 seconds, <b><u>he throws the ball down and hits several pins</u></b>.<br><br>
+
+                    </td>
+
+                    </tr>
+                    <tr style="height: 120px;">
+                        <td style="text-align: center;"><video controls="" controlslist="nodownload" class="px-1" width="360" height="360">
+                                <source src="static/v_8-QcL1k5n6k/v_8-QcL1k5n6k_1_vid_with_spect.mp4" type="video/mp4">Your browser does
+                                not
+                                support the audio element.
+                        </video></td>
+                        <td style="text-align: left"><b>User</b>: <b>Please briefly describe what is happening in the video before the sound of engine with exact start and end time information.</b><br><br>
+                                <b style="color:black;">Ground Truth</b>: The sound of <b>engine is from 8.2 to 9.1 seconds</b>. From 0 to 8.2 seconds, <b>we see the machine folded and put away</b>.<br><br>
+                                <b style="color:gray;">Video LLaMA 2</b>: In the video, a man is seen sitting on an exercise machine and pulling a handle. The sound of an engine can be heard from 12.1 seconds to 20.1 seconds.<br><br>
+                                <b style="color:rgb(233, 28, 140);">OMCAT</b>: The sound of <b>engine is from 8.5 to 10.1 seconds</b>. From 0 to 8.5 seconds, <b><u>we see a man folding a fitness machine for storage</u></b>.<br><br>
+
+                        </td>
+                        <td style="text-align: left"><b>User</b>: <b>Please briefly describe what is happening in the video after the sound of engine with exact start and end time information.</b><br><br>
+                            <b style="color:black;">Ground Truth</b>: The sound of <b>engine is from 8.2 to 9.1 seconds</b>. From 9.1 to 17 seconds, <b>we see the man workout again</b>.<br><br>
+                            <b style="color:gray;">Video LLaMA 2</b>: A man is using a rowing machine and pulling a handle attached to a string. The machine is digital and has a compact storage system.<br><br>
+                            <b style="color:rgb(233, 28, 140);">OMCAT</b>: The sound of <b>engine is from 8.5 to 10.1 seconds</b>. From 10.1 to 17 seconds, <b><u>the man continues to exercise on the machine</u></b>.<br><br>
+
+                    </td>
+
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="text-center">
+        <p> <code>OMCAT</code> achieves state-of-the-art performance on the <code>OCTAV-ST Youcook2</code>. <br>
+            To show advanced capabilities of <code>OMCAT</code> in this benchmark, we show comparison with a fime-tuned version of <code>GroundingGPT</code> below.</p>
+    </div>
+    <div class="container pt-5 mt-5 shadow p-5 mb-5 bg-white rounded">
+        <div class="container pt-1">
+            <div class="table-responsive pt-1">
+                <table class="table pt-1" id="dialogue">
+                    <thead>
+                        <tr>
+                            <th style="text-align: center">Video</th>
+                            <!-- <th style="text-align: center">Baseline</th> -->
+                            <th style="text-align: center">Question-Answer</th>
+                            <th style="text-align: center">Question-Answer</th>
+                        </tr>
+                        
+                        <tr style="height: 120px;">
+                            <td style="text-align: center;"><video controls="" controlslist="nodownload" class="px-1" width="360" height="360">
+                                    <source src="static/5cn9KJfaQXk_12_vid_with_spect.mp4" type="video/mp4">Your browser does
+                                    not
+                                    support the audio element.
+                            </video></td>
+                            <td style="text-align: left"><b>User</b>: <b>Provide a brief description of what is happening in the video before the sound of rooster along with start and end timestamps.</b><br><br>
+                                    <b style="color:black;">Ground Truth</b>: The sound of <b>rooster is from 3 to 5 seconds</b>. From 0 to 3 seconds, <b>pepperoni is being added</b>.<br><br>
+                                    <b style="color:gray;">GroundingGPT</b>: The sound of rooster is from 2.8 to 5 seconds. From 0 to 2.8 seconds, the pizza is being baked in the oven.<br><br>
+                                    <b style="color:rgb(233, 28, 140);">OMCAT</b>: The sound of <b>rooster is from 3 to 4.8 seconds</b>. From 0 to 3 seconds, <b><u>the pepperoni is being placed on the pizza</u></b>.<br><br>
+    
+                            </td>
+                            <td style="text-align: left"><b>User</b>: <b>Provide a brief description of what is happening in the video after the sound of rooster along with start and end timestamps.</b><br><br>
+                                <b style="color:black;">Ground Truth</b>: The sound of <b>rooster is from 3 to 5 seconds</b>. From 5 to 10 seconds, <b>the pizza is being wrapped</b>.<br><br>
+                                <b style="color:gray;">GroundingGPT</b>: The sound of rooster is from from 2.8 to 5 seconds. From 5 to 10 seconds, the pizza is being baked in the oven..<br><br>
+                                <b style="color:rgb(233, 28, 140);">OMCAT</b>: The sound of <b>rooster is from 3 to 4.8 seconds</b>. From 4.8 to 10 seconds, <b><u>the pizza is being baked in the oven</u></b>.<br><br>
+    
+                        </td>
+    
+                        </tr>
+                        <tr style="height: 120px;">
+                            <td style="text-align: center;"><video controls="" controlslist="nodownload" class="px-1" width="360" height="360">
+                                    <source src="static/PQ97HXmsFR0_1_vid_with_spect.mp4" type="video/mp4">Your browser does
+                                    not
+                                    support the audio element.
+                            </video></td>
+                            <td style="text-align: left"><b>User</b>: <b>Provide a brief description of what is happening in the video before the sound of sneeze along with start and end timestamps.</b><br><br>
+                                    <b style="color:black;">Ground Truth</b>: The sound of <b>sneeze is from 3 to 8 seconds</b>. From 0 to 3 seconds, <b>the shrimps are defrosted and the water is drained</b>.<br><br>
+                                    <b style="color:gray;">GroundingGPT</b>: The sound of sneeze is from 2.4 to 7.2 seconds. From 0 to 2.4 seconds, the shrimp is drained of water.<br><br>
+                                    <b style="color:rgb(233, 28, 140);">OMCAT</b>: The sound of <b>sneeze is from 3.1 to 7.7 seconds</b>. From 0 to 3.1 seconds, <b><u>the shrimp is being drained of water</u></b>.<br><br>
+    
+                            </td>
+                            <td style="text-align: left"><b>User</b>: <b>Please briefly describe what is happening in the video after the sound of sneeze with exact start and end time information.</b><br><br>
+                                <b style="color:black;">Ground Truth</b>: The sound of <b>sneeze is from 3 to 8 seconds</b>. From 8 to 17 seconds, <b>the tails of the shrimps are cut off and the shrimps are chopped into rough pieces about inch thick and set aside</b>.<br><br>
+                                <b style="color:gray;">GroundingGPT</b>: The sound of sneeze is from  2.4 to 7.2 seconds. From 7.2 to 17 seconds, the shrimp is drained and put on a plate.<br><br>
+                                <b style="color:rgb(233, 28, 140);">OMCAT</b>: The sound of <b>sneeze is from 3.1 to 7.7 seconds</b>. From 7.7 to 17 seconds, <b><u>the shrimp is being peeled and cut</u></b>.<br><br>
+    
+                        </td>
+    
+                        </tr>
+                        <tr style="height: 120px;">
+                            <td style="text-align: center;"><video controls="" controlslist="nodownload" class="px-1" width="360" height="360">
+                                    <source src="static/6nVIgasiUtw/6nVIgasiUtw_6_vid_with_spect.mp4" type="video/mp4">Your browser does
+                                    not
+                                    support the audio element.
+                            </video></td>
+                            <td style="text-align: left"><b>User</b>: <b>Provide a brief description of what is happening in the video before the sound of children playing along with start and end timestamps.</b><br><br>
+                                    <b style="color:black;">Ground Truth</b>: The sound of <b>children playing is from 15.99 to 19 seconds</b>. From 0 to 15.99 seconds, <b>the batter is being spread on the pan</b>.<br><br>
+                                    <b style="color:gray;">GroundingGPT</b>: The sound of children playing is from 17.7 to 19.4 seconds. From 0 to 17.7 seconds, the batter is being spread on the pan.<br><br>
+                                    <b style="color:rgb(233, 28, 140);">OMCAT</b>: The sound of <b>children playing is from 15.6 to 19.1 seconds</b>. From 0 to 15.6 seconds, <b><u>the batter is being spread on the pan</u></b>.<br><br>
+    
+                            </td>
+                            <td style="text-align: left"><b>User</b>: <b>Descibe what is happening in the video after the sound of children playing with start and end timestamps.</b><br><br>
+                                <b style="color:black;">Ground Truth</b>: The sound of <b>children playing is from 15.99 to 19 seconds</b>. From 19 to 26 seconds, <b>the masala is being spread on the dosa</b>.<br><br>
+                                <b style="color:gray;">GroundingGPT</b>: The sound of children playing is from 17.6 to 18.8 seconds. From 18.8 to 26 seconds, the batter is being spread on the pan.<br><br>
+                                <b style="color:rgb(233, 28, 140);">OMCAT</b>: The sound of <b>children playing is from 17.3 to 18.9 seconds</b>. From 17.3 to 18.8 seconds, <b><u>the dosa is being removed from the pan and served on a plate</u></b>.<br><br>
+    
+                        </td>
+    
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+</div>
+
+
+
+
+    <div class="text-center">
+        <h2>Multi-turn temporal and cross-modal dialogue</h2>
+    </div>
+    <div class="text-center">
+        <p> Below, we show some examples from our proposed <code>OCTAV-MT</code> benchmark that consists of multi-turn dialogues <br>
+           on videos that are anchored on multiple sound events.</p>
+    </div>
+    <div class="container pt-5 mt-5 shadow p-5 mb-5 bg-white rounded">
+        <div class="container pt-1">
+            <div class="table-responsive pt-1">
+                <table class="table pt-1" id="dialogue">
+                    <thead>
+                        <tr>
+                            <th style="text-align: center">Video</th>
+                            <!-- <th style="text-align: center">Baseline</th> -->
+                            <th style="text-align: right">Dialogue</th>
+                        </tr>
+                        <tr style="height: 120px;">
+                            <td style="text-align: center;"><video controls="" controlslist="nodownload" class="px-1" width="360" height="360">
+                                    <source src="static/4K9h7ojJYkc_1_vid_with_spect.mp4" type="video/mp4">Your browser does
+                                    not
+                                    support the audio element.
+                            </video>
+                            </td>
+                            <td style="text-align: left"><b>User</b>: <b>Give a short description of what is happening in the video before the second sound of Acoustic guitar, including the precise start and end time details.</b><br><br>
+                                    <b style="color:black;">Ground Truth</b>: The second sound of <b>Acoustic guitar is from 13 to 20 seconds</b>. From 6 to 20 seconds, <b>flour, onion seed, salt and baking powder are mixed</b>.<br><br>
+                                    <!-- <b style="color:gray;">GroundingGPT</b>: Birds are chirping.<br> -->
+                                    <b style="color:rgb(233, 28, 140);">OMCAT</b>: The second sound of <b>Acoustic guitar is from 12.7 to 19.1 seconds</b>. From 0 to 19.1 seconds, <b><u>the flour is being added to the bread mixture</u></b>.<br><br>
+    
+                            </td>
+                            <td style="text-align: left"><b>User</b>: <b>Ensure to mention the start and end timestamps when explaining what is happening in the video after the second sound of Acoustic guitar.</b><br><br>
+                                <b style="color:black;">Ground Truth</b>: The second sound of <b>Acoustic guitar is from 13 to 20 seconds</b>. From 20 to 27 seconds, <b>the dough is kneaded by hand</b>.<br><br>
+                                <!-- <b style="color:gray;">GroundingGPT</b>: Birds are chirping.<br> -->
+                                <b style="color:rgb(233, 28, 140);">OMCAT</b>: The second sound of <b>Acoustic guitar is from 12.7 to 19.1 seconds</b>. From 19.1 to 27 seconds, <b><u>the dough is being kneaded</u></b>.<br><br>
+                            </td>
+                        
+                            <td style="text-align: left"><b>User</b>: <b>Provide a brief description of what is happening in the video before the first sound of Acoustic guitar, along with the start and end times.</b><br><br>
+                                <b style="color:black;">Ground Truth</b>: The first sound of <b>Acoustic guitar is from 5 to 6 seconds</b>. From 0 to 5 seconds, <b><u>yeast and sugar are mixed in a bowl of warm water</u></b>.<br><br>
+                                <!-- <b style="color:gray;">GroundingGPT</b>: Birds are chirping.<br> -->
+                                <b style="color:rgb(233, 28, 140);">OMCAT</b>: The first sound of <b>Acoustic guitar is from 5.4 to 7.2 seconds</b>. From 0 to 5.4 seconds, <b><u>the dough is being kneaded</u></b>.<br><br>
+                                (<b>Failure case:</b> The model incorrectly predicts the event as it is not clearly visible from the visual frames itself that yeast and sugar are being mixed.)
+
+                            </td>
+
+                        </tr>
+                        <tr style="height: 120px;">
+                            <td style="text-align: center;"><video controls="" controlslist="nodownload" class="px-1" width="360" height="360">
+                                    <source src="static/v_G5frRzhSNJ8_0_vid_with_spect.mp4" type="video/mp4">Your browser does
+                                    not
+                                    support the audio element.
+                            </video></td>
+                            <td style="text-align: left"><b>User</b>: <b>When describing what is happening in the video after the first sound of laugh? Answer with start and end timestamps, include the exact start and end time information.</b><br><br>
+                                <b style="color:black;">Ground Truth</b>: The first sound of <b>laugh is from 5.8 to 7 seconds</b>. From 7 to 17.4, <b>two hair stylists stand next to a young man as they speak to a camera about Justin Bieber's hairstyle look</b>.<br><br>
+                                <!-- <b style="color:gray;">GroundingGPT</b>: Birds are chirping.<br> -->
+                                <b style="color:rgb(233, 28, 140);">OMCAT</b>: The first sound of <b>laugh is from 4.1 to 6.2 seconds</b>. From 6.2 to 16.6 seconds, <b><u>the stylist uses a brush and blow dryer to dry the model's hair</u></b>.<br><br>
+                                (<b>Failure case:</b> The model incorrectly predicts the video event.)
+    
+
+                            </td>
+                            
+                            <td style="text-align: left"><b>User</b>: <b>Could you describe what is happening in the video before the second sound of laugh? Answer with start and end timestamps, including the exact start and end times?</b><br><br>
+                            <b style="color:black;">Ground Truth</b>: The second sound of <b>laugh is from 17.4 to 18.5 seconds</b>. From 7 to 18.5 seconds, <b>two hair stylists stand next to a young man as they speak to a camera about Justin Bieber's hairstyle look</b>.<br><br>
+                            <!-- <b style="color:gray;">GroundingGPT</b>: Birds are chirping.<br> -->
+                            <b style="color:rgb(233, 28, 140);">OMCAT</b>: The second sound of <b>laugh is from 7.7 to 9 seconds</b>. From 0 to 7.7 seconds, <b><u>the hair stylists rubs some pomade on the man's hair</b></u>.<br><br>
+                            (The model incorrectly predicts the sound of second laugh hence incorrect video caption. However, the video caption predicted for the timestamp 0 to 7.7 seconds is correct. )
+                        
+
+                            </td>
+                            <td style="text-align: left"><b>User</b>: <b>Give a short description of what is happening in the video before the first sound of laugh? Answer with start and end timestamps, including the precise start and end time details.</b><br><br>
+                            <b style="color:black;">Ground Truth</b>: The first sound of <b>laugh is from 6 to 7 seconds</b>. From 0 to 6 seconds, <b>a woman sprays mist onto the hair of young man and she continues on to <u>cut his hair, blow dry it, and finishes off by styling it</u></b>.<br><br>
+                            <!-- <b style="color:gray;">GroundingGPT</b>: Birds are chirping.<br> -->
+                            <b style="color:rgb(233, 28, 140);">OMCAT</b>: The first sound of <b>laugh is from 7.7 to 9.7 seconds</b>. From 0 to 7.7 seconds, <b><u>the stylist uses a brush to style the boy's hair</u></b>.<br><br>
+
+                            </td>
+
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+</body>
+
+</html>
