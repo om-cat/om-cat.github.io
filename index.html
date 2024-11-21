@@ -122,7 +122,7 @@
     <h2>Temporal question answering on natural videos</h2>
 </div>
 <div class="text-center">
-    <p> <code>OMCAT</code> achieves state-of-the-art performance on the <code>UnAV-MT-100</code> dataset, a version of the UnAV-100 dataset with multiple question answers. <br></p>
+    <p> <code>OMCAT</code> achieves remarkable performance on natural videos as shown below. <br></p>
 </div>
 <div class="container pt-5 mt-5 shadow p-5 mb-5 bg-white rounded">
     <div class="container pt-1">
@@ -134,12 +134,63 @@
                         <!-- <th style="text-align: center">Baseline</th> -->
                         <th style="text-align: center">Question-Answer</th>
                     </tr>
+                    
+                    <tr style="height: 120px;">
+                        
+                        <td style="text-align: center;"><video controls="" controlslist="nodownload" class="px-1" width="360" height="360">
+                                <source src="static/whiplash_trimmed.mp4" type="video/mp4">Your browser does
+                                not
+                                support the audio element.
+                        </video><br>
+                        <b>A segment from Whiplash movie trailer</b>
+                        </td>
+                        <td style="text-align: left"><b>User</b>: <b>What musical instruments can be heard in the video?</b><br><br>
+                                <!-- <b style="color:gray;">GroundingGPT</b>: Birds are chirping.<br> -->
+                                <b style="color:rgb(233, 28, 140);">OMCAT</b>: The audio features a drum beat, a bass guitar, and a keyboard playing a melody.<br><br>
+                        </td>
+
+                    </tr>
+                    <tr style="height: 120px;">
+                        
+                        <td style="text-align: center;"><video controls="" controlslist="nodownload" class="px-1" width="360" height="360">
+                                <source src="static/wicked_trimmed_music.mp4" type="video/mp4">Your browser does
+                                not
+                                support the audio element.
+                        </video><br>
+                        <b>A segment from Wicked movie trailer</b>
+                        </td>
+                        <td style="text-align: left"><b>User</b>: <b>What musical instruments can be heard in the video?</b><br><br>
+                                <!-- <b style="color:gray;">GroundingGPT</b>: Birds are chirping.<br> -->
+                                <b style="color:rgb(233, 28, 140);">OMCAT</b>: The audio features a percussion instrument playing a rhythmic beat, followed by a synthesized sound effect.<br><br>
+                        </td>
+
+                    </tr>
+                    <tr style="height: 120px;">
+                        <td style="text-align: center;"><video controls="" controlslist="nodownload" class="px-1" width="360" height="360">
+                                <source src="static/yt_vid_1.mp4" type="video/mp4">Your browser does
+                                not
+                                support the audio element.
+                        </video><br>
+                        <b>YouTube video</b>
+                        </td>
+                        <td style="text-align: left"><b>User</b>: <b>Describe what is happening in the video before the sound of man speaking with start and end timestamps.</b><br><br>
+                                <!-- <b style="color:gray;">GroundingGPT</b>: Birds are chirping.<br> -->
+                                <b style="color:rgb(233, 28, 140);">OMCAT</b>: The man is speaking from 7 to 34 seconds. From 0 to 7 seconds, the detergent is being sprayed from a bottle.<br><br><br>
+
+                    
+                        <b style="text-align: left">User</b>: <b>What is shown in the video between timestamps 20 and 39 seconds?</b><br><br>
+                            <!-- <b style="color:gray;">GroundingGPT</b>: Birds are chirping.<br> -->
+                            <b style="color:rgb(233, 28, 140);">OMCAT</b>: A person is shown spraying a bottle of cleaner on a car's dashboard and then wiping it off.<br><br>
+                        </td>
+
+                    </tr>
                     <tr style="height: 120px;">
                         <td style="text-align: center;"><video controls="" controlslist="nodownload" class="px-1" width="360" height="360">
                                 <source src="static/-x4aw7R86BI.mp4" type="video/mp4">Your browser does
                                 not
                                 support the audio element.
-                        </video>
+                        </video><br>
+                        <b>UnAV-100 dataset</b>
                         </td>
                         <td style="text-align: left"><b>User</b>: <b>Please summarize what is happening in the video at the start, specifying the start and end timestamps.</b><br><br>
                                 <b style="color:black;">Ground Truth</b>: At the start of the video, <b>from 0 to 7.5 seconds, there is lawn mowing happening</b>.<br><br>
@@ -159,7 +210,9 @@
                                 <source src="static/8nGSHp1kQZY.mp4" type="video/mp4">Your browser does
                                 not
                                 support the audio element.
-                        </video></td>
+                        </video><br>
+                        <b>UnAV-100 dataset</b>
+                        </td>
                         <td style="text-align: left"><b>User</b>: <b>Describe what is happening in the video with start and end timestamps.</b><br><br>
                             <b style="color:black;">Ground Truth</b>: <b>There are lions roaring in the video from 3.7 to 42.5 seconds</b>.<br><br>
                             <!-- <b style="color:gray;">GroundingGPT</b>: Birds are chirping.<br> -->
@@ -172,7 +225,9 @@
                                 <source src="static/-ty5tv-2kys_1.mp4" type="video/mp4">Your browser does
                                 not
                                 support the audio element.
-                        </video></td>
+                        </video><br>
+                        <b>UnAV-100 dataset</b>
+                        </td>
                         <td style="text-align: left"><b>User</b>: <b>Include start and end time details when summarizing what is happening in the video at the start.</b><br><br>
                             <b style="color:black;">Ground Truth</b>: At the start of the video from <b>0 to 36 seconds, there is an acoustic guitar and a ukulele being played</b>.<br><br>
                             <!-- <b style="color:gray;">GroundingGPT</b>: Birds are chirping.<br> -->
